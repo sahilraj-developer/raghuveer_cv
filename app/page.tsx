@@ -4,18 +4,27 @@ import {
   ShortsRow,
   VideosGrid,
 } from "@/components/media-browser";
-import { ArrowIcon } from "@/components/icons";
+import { ArrowIcon, SocialIcon, YoutubeBrandIcon } from "@/components/icons";
 import { getInstagramMedia } from "@/lib/instagram";
+import { getFacebookPosts } from "@/lib/facebook";
 import { site } from "@/lib/site";
-import { getYoutubeShorts, getYoutubeVideos } from "@/lib/youtube-server";
+import {
+  getYoutubeShorts,
+  getYoutubeShortsForChannel,
+  getYoutubeVideos,
+  getYoutubeVideosForChannel,
+} from "@/lib/youtube-server";
 import { VisitorCount } from "@/components/visitor-count";
 import Image from "next/image";
 
 export default async function Home() {
-  const [videos, shorts, instagram] = await Promise.all([
+  const [videos, shorts, secondChannelVideos, secondChannelShorts, instagram, facebook] = await Promise.all([
     getYoutubeVideos(),
     getYoutubeShorts(),
+    getYoutubeVideosForChannel(site.secondYoutube.url, site.secondYoutube.channelId),
+    getYoutubeShortsForChannel(site.secondYoutube.url, site.secondYoutube.channelId),
     getInstagramMedia(),
+    getFacebookPosts(),
   ]);
   const featured = videos[0];
 
@@ -117,6 +126,33 @@ export default async function Home() {
         <VideosGrid videos={videos} />
       </section>
 
+      <section id="nanku-tech" className="border-y border-line bg-[#0e1d0b]/70 py-20">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="mb-10 flex flex-wrap items-end justify-between gap-6">
+            <div>
+              <p className="text-xs tracking-[0.28em] text-gold uppercase">Second YouTube channel</p>
+              <h2 className="mt-3 flex items-center gap-3 font-serif text-4xl">
+                <YoutubeBrandIcon className="h-8 w-8 text-[#ff3030]" />
+                {site.secondYoutube.name}
+              </h2>
+              <p className="mt-2 text-sm text-muted">{site.secondYoutube.handle} · Latest videos and Shorts</p>
+            </div>
+            <a href={site.secondYoutube.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground">
+              Visit {site.secondYoutube.handle}
+              <ArrowIcon className="h-4 w-4" />
+            </a>
+          </div>
+          <VideosGrid videos={secondChannelVideos} includeFirst />
+          <div className="mt-12">
+            <div className="mb-6 flex items-center justify-between gap-4">
+              <h3 className="font-serif text-2xl">{site.secondYoutube.name} Shorts</h3>
+              <a href={`https://www.youtube.com/${site.secondYoutube.handle}/shorts`} target="_blank" rel="noopener noreferrer" className="text-sm text-muted hover:text-foreground">All Shorts</a>
+            </div>
+            <ShortsRow shorts={secondChannelShorts} />
+          </div>
+        </div>
+      </section>
+
       <section id="shorts" className="border-y border-line py-20">
         <div className="mx-auto max-w-6xl px-6">
           <div className="mb-10 flex items-end justify-between">
@@ -145,7 +181,7 @@ export default async function Home() {
         <InstagramGrid items={instagram} />
       </section>
 
-      <section id="collaborate" className="border-y border-line bg-[#100e0c] py-20">
+      <section id="collaborate" className="border-y border-line bg-[#0b1008] py-20">
         <div className="mx-auto grid max-w-6xl gap-8 px-6 lg:grid-cols-[1fr_auto] lg:items-end">
           <div>
             <p className="text-xs tracking-[0.28em] text-gold uppercase">Work together</p>
@@ -160,6 +196,55 @@ export default async function Home() {
           >
             Send a proposal
           </a>
+        </div>
+      </section>
+
+      <section id="connect" className="border-y border-line py-20">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="mb-10 max-w-2xl">
+            <p className="text-xs tracking-[0.28em] text-gold uppercase">Stay connected</p>
+            <h2 className="mt-3 font-serif text-4xl">Connect With Us</h2>
+            <p className="mt-4 leading-7 text-muted">
+              Follow us on our social media platforms for updates and content.
+            </p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {site.socialLinks.map((social) => (
+              <a
+                key={social.platform}
+                href={social.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`Follow ${social.handle} on ${social.platform} (opens in a new tab)`}
+                className="group flex items-center gap-4 rounded-2xl border border-line bg-white/[0.02] p-5 transition hover:border-lime-300/50 hover:bg-lime-300/[0.05] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-lime-300"
+              >
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-lime-300/20 bg-lime-300/[0.08] text-lime-300 transition group-hover:bg-lime-300 group-hover:text-[#10110a]">
+                  <SocialIcon platform={social.platform} className="h-6 w-6" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block font-serif text-xl">{social.platform}</span>
+                  <span className="mt-1 block truncate text-sm text-muted">{social.handle}</span>
+                </span>
+                <ArrowIcon className="h-4 w-4 shrink-0 text-muted transition group-hover:translate-x-1 group-hover:text-lime-300" />
+              </a>
+            ))}
+          </div>
+          {facebook.length > 0 && (
+            <div className="mt-12">
+              <h3 className="mb-5 font-serif text-2xl">Latest Facebook updates</h3>
+              <div className="grid gap-4 md:grid-cols-3">
+                {facebook.map((post) => (
+                  <a key={post.id} href={post.permalink} target="_blank" rel="noopener noreferrer" className="overflow-hidden rounded-2xl border border-line bg-white/[0.02] transition hover:border-lime-300/50">
+                    {post.image && <Image src={post.image} alt="" width={800} height={500} className="aspect-video w-full object-cover" unoptimized />}
+                    <div className="p-5">
+                      <p className="line-clamp-4 text-sm leading-6 text-muted">{post.message}</p>
+                      {post.created && <p className="mt-3 text-xs text-lime-300">{new Date(post.created).toLocaleDateString("en-IN")}</p>}
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

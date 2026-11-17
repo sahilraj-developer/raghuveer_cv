@@ -18,9 +18,9 @@ export function HeroFeature({ video }: { video?: YoutubeVideo }) {
     return (
       <a
         href={site.youtube.url}
-        className="group relative block overflow-hidden rounded-[28px] border border-line bg-[#101923] aspect-video"
+        className="group relative block overflow-hidden rounded-[28px] border border-line bg-[#10200d] aspect-video"
       >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(212,165,116,0.22),transparent_45%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(154,203,33,0.2),transparent_45%)]" />
         <div className="absolute inset-0 flex flex-col justify-end p-8">
           <p className="text-xs tracking-[0.28em] uppercase text-gold">YouTube</p>
           <p className="mt-3 max-w-md font-serif text-3xl">
@@ -52,7 +52,7 @@ export function HeroFeature({ video }: { video?: YoutubeVideo }) {
         <span className="absolute top-4 right-4 grid h-12 w-12 place-items-center rounded-full bg-foreground text-background shadow-lg transition group-hover:scale-105 sm:h-14 sm:w-14">
           <PlayIcon className="h-6 w-6 ml-0.5" />
         </span>
-        <div className="border-t border-line bg-[#100f0d] px-5 py-5 sm:px-6 sm:py-6">
+        <div className="border-t border-line bg-[#10200d] px-5 py-5 sm:px-6 sm:py-6">
           <p className="text-xs tracking-[0.28em] uppercase text-gold">Latest video</p>
           <h2 className="mt-2 max-w-xl font-serif text-2xl leading-tight text-[#fffaf0] sm:text-3xl">{video.title}</h2>
           <p className="mt-2 text-sm text-muted sm:text-base">
@@ -71,15 +71,15 @@ export function HeroFeature({ video }: { video?: YoutubeVideo }) {
   );
 }
 
-export function VideosGrid({ videos }: { videos: YoutubeVideo[] }) {
+export function VideosGrid({ videos, includeFirst = false }: { videos: YoutubeVideo[]; includeFirst?: boolean }) {
   const [active, setActive] = useState<YoutubeVideo | null>(null);
-  const rest = videos.slice(1, 7);
+  const rest = includeFirst ? videos.slice(0, 6) : videos.slice(1, 7);
 
   if (!rest.length) {
     return (
       <p className="text-muted">
-        Connect `YOUTUBE_CHANNEL_ID` to pull the latest long-form uploads
-        automatically.
+        No recent uploads are available for this channel yet. Set its channel ID
+        in the environment if automatic channel lookup is unavailable.
       </p>
     );
   }
@@ -187,7 +187,7 @@ export function InstagramGrid({ items }: { items: InstagramMedia[] }) {
         href={site.instagram.url}
         target="_blank"
         rel="noreferrer"
-        className="group flex min-h-48 items-end overflow-hidden rounded-2xl border border-line bg-[radial-gradient(circle_at_30%_20%,rgba(114,213,232,0.22),transparent_45%),#101923] p-7"
+        className="group flex min-h-48 items-end overflow-hidden rounded-2xl border border-line bg-[radial-gradient(circle_at_30%_20%,rgba(154,203,33,0.2),transparent_45%),#10200d] p-7"
       >
         <div>
           <p className="text-xs tracking-[0.28em] text-gold uppercase">Instagram</p>
@@ -224,7 +224,7 @@ export function InstagramGrid({ items }: { items: InstagramMedia[] }) {
               unoptimized={item.live && item.image.includes("instagram")}
             />
           ) : (
-            <div className="flex aspect-4/5 items-end bg-[#171412] p-4">
+            <div className="flex aspect-4/5 items-end bg-[#10200d] p-4">
               <p className="text-sm">{item.caption}</p>
             </div>
           )}

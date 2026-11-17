@@ -55,14 +55,60 @@ async function fetchPlaylist(id: string): Promise<YoutubeVideo[]> {
   }
 }
 
+async function resolveChannelId(channelUrl: string): Promise<string> {
+  try {
+    const res = await fetch(channelUrl, {
+      headers: { "user-agent": "Mozilla/5.0 (compatible; RaghuveerPortfolio/1.0)" },
+      signal: AbortSignal.timeout(8_000),
+      next: { revalidate: 86_400 },
+    });
+    if (!res.ok) return "";
+    const html = await res.text();
+    const patterns = [
+      /"(?:externalId|channelId)"\s*:\s*"(UC[A-Za-z0-9_-]{22})"/,
+      /itemprop=["']channelId["'][^>]*content=["'](UC[A-Za-z0-9_-]{22})["']/i,
+      /\/channel\/(UC[A-Za-z0-9_-]{22})/,
+    ];
+    for (const pattern of patterns) {
+      const match = html.match(pattern);
+      if (match?.[1]) return match[1];
+    }
+    return "";
+  } catch {
+    return "";
+  }
+}
+
 export async function getYoutubeVideos(channelId = site.youtube.channelId): Promise<YoutubeVideo[]> {
   "use cache";
   cacheLife("hours");
-  return fetchPlaylist(playlistId(channelId, "UULF"));
+  const resolvedId = await resolveChannelId(site.youtube.url) || channelId;
+  return fetchPlaylist(playlistId(resolvedId, "UULF"));
 }
 
 export async function getYoutubeShorts(channelId = site.youtube.channelId): Promise<YoutubeVideo[]> {
   "use cache";
   cacheLife("hours");
-  return fetchPlaylist(playlistId(channelId, "UUSH"));
+  const resolvedId = await resolveChannelId(site.youtube.url) || channelId;
+  return fetchPlaylist(playlistId(resolvedId, "UUSH"));
+}
+
+export async function getYoutubeVideosForChannel(
+  channelUrl: string,
+  fallbackChannelId = "",
+): Promise<YoutubeVideo[]> {
+  "use cache";
+  cacheLife("hours");
+  const resolvedId = await resolveChannelId(channelUrl) || fallbackChannelId;
+  return fetchPlaylist(playlistId(resolvedId, "UULF"));
+}
+
+export async function getYoutubeShortsForChannel(
+  channelUrl: string,
+  fallbackChannelId = "",
+): Promise<YoutubeVideo[]> {
+  "use cache";
+  cacheLife("hours");
+  const resolvedId = await resolveChannelId(channelUrl) || fallbackChannelId;
+  return fetchPlaylist(playlistId(resolvedId, "UUSH"));
 }
